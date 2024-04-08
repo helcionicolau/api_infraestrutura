@@ -75,7 +75,39 @@ def authenticate_user(email_or_telefone: str, password: str, request: Request):
         else:
             raise HTTPException(status_code=401, detail="Incorrect email or password")
 
+# Função para invalidar o token de acesso do usuário
+def invalidate_access_token(token: str):
+    con_principal.execute(user_tokens.delete().where(user_tokens.c.token == token))
 
+@auth_router.post("/logout", tags=["Autenticação"])
+async def logout(request: Request, response: Response, authorization: str = Header(None)):
+    """
+    Realiza o logout do usuário, invalidando o token de acesso.
+    """
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header is missing")
+
+    token = authorization.split(" ")[1] if "Bearer" in authorization else None
+    if not token:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    try:
+        payload = jwt.decode(token, app_settings.SECRET_KEY, algorithms=[app_settings.ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        # Invalidar o token de acesso
+        invalidate_access_token(token)
+
+        return {"message": "Logout successful"}
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        logger.error(f"Error decoding token: {e}")
+        raise HTTPException(status_code=401, detail="Token verification failed")
 
 # Middleware para autenticação
 async def authenticate_authorization(authorization: str = Header(None)):
