@@ -1,46 +1,24 @@
-# MYSQL
-# from sqlalchemy import create_engine,MetaData
-# engine=create_engine('mysql+pymysql://root@localhost:3306/bd_maxalert_principal')
-# meta=MetaData()
-# con=engine.connect()
-
-# # SQLSERVER
-# from sqlalchemy import create_engine, MetaData
-# import urllib
-
-# # Conexão com o SQL Server usando o Windows Authentication
-# # Substitua 'server_name' e 'database_name' pelos valores reais do seu servidor SQL Server e do banco de dados.
-# # Se necessário, inclua também outros parâmetros específicos de configuração do seu servidor.
-# params = urllib.parse.quote_plus("DRIVER={SQL Server};SERVER=DESKTOP-NHETBCR\SQLEXPRESS;DATABASE=bd_maxalert_principal;Trusted_Connection=yes;")
-# engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
-
-# # Metadados
-# meta = MetaData()
-
-# # Conexão com o banco de dados
-# con = engine.connect()
-
 from sqlalchemy import create_engine, MetaData
-import urllib
 
-# Conexão com o primeiro SQL Server
-params_principal = {
-    "server": "DESKTOP-NHETBCR\SQLEXPRESS",
-    "database": "bd_maxalert_principal"
-}
+# Conexão com o MySQL
+# Dados de conexão
+usuario = '331882_maxalert'
+senha = 'kjdhi%%##$'
+servidor = 'mysql-securegestdb.alwaysdata.net'
 
-params_encoded_principal = urllib.parse.quote_plus(f"DRIVER={{SQL Server}};SERVER={params_principal['server']};DATABASE={params_principal['database']};Trusted_Connection=yes;")
-engine_principal = create_engine(f"mssql+pyodbc:///?odbc_connect={params_encoded_principal}")
+# Nome das bases de dados
+nome_bd_principal = 'securegestdb_bd_maxalert_principal'
+nome_bd_infraestrutura = 'securegestdb_bd_infraestrutura'
+
+# String de conexão
+con_principal_str = f"mysql+pymysql://{usuario}:{senha}@{servidor}/{nome_bd_principal}"
+con_infra_str = f"mysql+pymysql://{usuario}:{senha}@{servidor}/{nome_bd_infraestrutura}"
+
+# Criar engines e metadados
+engine_principal = create_engine(con_principal_str)
 meta_principal = MetaData(bind=engine_principal)
 
-# Conexão com o segundo SQL Server
-params_infra = {
-    "server": "DESKTOP-NHETBCR\SQLEXPRESS",
-    "database": "bd_infraestrutura"
-}
-
-params_encoded_infra = urllib.parse.quote_plus(f"DRIVER={{SQL Server}};SERVER={params_infra['server']};DATABASE={params_infra['database']};Trusted_Connection=yes;")
-engine_infra = create_engine(f"mssql+pyodbc:///?odbc_connect={params_encoded_infra}")
+engine_infra = create_engine(con_infra_str)
 meta_infra = MetaData(bind=engine_infra)
 
 # Conexão com o banco de dados
